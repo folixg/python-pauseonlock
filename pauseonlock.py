@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import argparse
 import asyncio
 from enum import Enum
@@ -17,6 +18,8 @@ class PauseOnLock:
         self.running_players = []
         self.logger = logging.getLogger(__name__)
         self._configure_logging(debug)
+        if debug:
+            self.logger.info("Running with debug output enabled")
 
     DBUS_INTRO = """
         <node>
@@ -108,17 +111,20 @@ class PauseOnLock:
             iface.on_active_changed(self.on_lock_change)
 
 
-async def main(debug=False):
-    await PauseOnLock(debug).run()
-
-
-if __name__ == "__main__":
+def main():
     parser = argparse.ArgumentParser(
-        description="Pause media players when locking your screen and resume playback when unlocking"
+        description=(
+            "Pause media players when locking your screen "
+            "and resume playback when unlocking"
+        )
     )
     parser.add_argument("--debug", action="store_true", help="Print debug output")
     args = parser.parse_args()
     # run the main function in an endless loop
     loop = asyncio.get_event_loop()
-    asyncio.ensure_future(main(args.debug))
+    asyncio.ensure_future(PauseOnLock(args.debug).run())
     loop.run_forever()
+
+
+if __name__ == "__main__":
+    main()
